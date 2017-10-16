@@ -18,7 +18,7 @@ from programme_grade_limits import programme_grade_limits
 # FORECASTED VIEWERSHIP RATINGS AVAILABLE PER PROGRAMME
 # EACH TIME SLOT ONLY TAKES ONE PROGRAMME TYPE/QUALITY ONLY.
 
-# grades of programmes could be calculated for ents based on: cost_of_production, popularity, guests, tech used.
+# grades of programmes could be calculated based on: cost_of_production, popularity, guests, tech used.
 # Viewers also tend to stick to the same programmes.
 
 days_of_the_week_count = 8
@@ -44,14 +44,9 @@ def main():
     total_combos = get_total_contrib_of_viewers(total_possible_combo_count, days, time_slots, grades_of_programme,
                                                 solver)
 
-    for index, programme_type in enumerate(programme_types):
-        for grade in grades_of_programme:
-            items = [combo for combo in total_combos if index == combo[2] and grade == combo[3]]
-
-            solver.Add(len(items) <= total_amount_of_hours_per_genre)
-
 
     # z = Y(i,j,k,x) * C(i,j,k,x)
+    # set objective to get max value based on final val in tuple for a given slot on a given day
     objective = solver.Maximize(total_combos, 1)
 
     vars_phase = solver.Phase([objective], solver.CHOOSE_FIRST_UNBOUND, solver.ASSIGN_MIN_VALUE)
