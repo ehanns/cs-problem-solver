@@ -2,6 +2,8 @@ from __future__ import print_function
 
 from ortools.constraint_solver import pywrapcp
 from programme_grade_limits import programme_grade_limits
+from operator import itemgetter
+import calendar
 
 #OBJECTIVE = MAXIMISE VIEWERSHIP FOR A GIVEN PROGRAMME K OF QUALITY X ON SLOT I ON DAY J
 
@@ -44,20 +46,25 @@ def main():
     total_combos = get_total_contrib_of_viewers(total_possible_combo_count, days, time_slots, grades_of_programme,
                                                 solver)
 
+    optimised_slots = []
+    total_viewership_count = 0
 
-    # z = Y(i,j,k,x) * C(i,j,k,x)
-    # set objective to get max value based on final val in tuple for a given slot on a given day
-    objective = solver.Maximize(total_combos, 1)
+    for day in days:
+        for slot in time_slots:
+            items = [combo for combo in total_combos if combo[0] == day and combo[1] == slot]
+            sorted_items = sorted(items, key=itemgetter(4), reverse=True)
+            total_viewership_count += sorted_items[0][4]
+            optimised_slots.append(sorted_items[0])
 
-    vars_phase = solver.Phase([objective], solver.CHOOSE_FIRST_UNBOUND, solver.ASSIGN_MIN_VALUE)
+    for optimised_slot in optimised_slots:
+        print('Day: %s ' % calendar.day_abbr[optimised_slot[0] - 1])
+        print('Slot: %i,' % optimised_slot[1])
+        print('Programme Type: %s' % programme_types[optimised_slot[2]])
+        print('Grade: %i' % optimised_slot[3])
+        print('Viewership: %i' % optimised_slot[4])
 
-    solver.Solve(vars_phase)
-
-    count = 0
-    while solver.NextSolution():
-        count += 1
-
-    print("Number of solutions:", count)
+    print("Total Slots Filled out of 672: %i " % len(optimised_slots))
+    print("Total Viewership Figures: %i " % total_viewership_count)
 
 
 def get_total_contrib_of_viewers(total_possible_combo_count, days, time_slots, grades_of_programme, solver):
@@ -80,13 +87,13 @@ def get_total_contrib_of_viewers(total_possible_combo_count, days, time_slots, g
 def get_contrib_viewer_value(day, slot, programme_index, grade):
     # C(i, k, j, x) = P(i, j, k) * F(x) * POPULATION
 
-    weighting = grade_weightings[grade - 1] # F(x)
+    weighting = grade_weightings[grade - 1] #F(x)
     population = 100
     percentage_of_viewers = day * slot * (programme_index + 1)
 
     viewer_contrib_value = percentage_of_viewers * weighting * population
 
-    return viewer_contrib_value
+    return int(viewer_contrib_value)
 
 
 if __name__ == '__main__':
