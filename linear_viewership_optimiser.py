@@ -23,11 +23,12 @@ import calendar
 # grades of programmes could be calculated based on: cost_of_production, popularity, guests, tech used.
 # Viewers also tend to stick to the same programmes.
 
-days_of_the_week_count = 8
+days_of_the_week_count = 7
 programme_types = ['FACTUAL', 'TRUE CRIME', 'REALITY', 'PARANORMAL', 'GAMESHOW/QUIZ']
-slots_per_day_count = 97
-grades_of_programme_count = 4
+slots_per_day_count = 96
+grades_of_programme_count = 3
 grade_weightings = [0.2, 0.1, 0.05]
+programme_weightings = [0.5, 0.3, 0.6, 0.7, 0.4]
 total_amount_of_hours_per_genre = 45
 
 start_index = 1
@@ -35,11 +36,11 @@ start_index = 1
 def main():
     solver = pywrapcp.Solver('schedule_programmes_viewership')
 
-    days = range(start_index, days_of_the_week_count)
-    time_slots = range(start_index, slots_per_day_count)
-    grades_of_programme = range(start_index, grades_of_programme_count)
-    total_slots_across_days = (days_of_the_week_count - 1) * (slots_per_day_count - 1)
-    total_programme_grade_combinations = len(programme_types) * (grades_of_programme_count - 1)
+    days = range(start_index, days_of_the_week_count + 1)
+    time_slots = range(start_index, slots_per_day_count + 1)
+    grades_of_programme = range(0, grades_of_programme_count)
+    total_slots_across_days = (days_of_the_week_count) * (slots_per_day_count)
+    total_programme_grade_combinations = len(programme_types) * (grades_of_programme_count)
     total_possible_combo_count = total_slots_across_days * total_programme_grade_combinations
 
     # C(i,j,k,x) = Contrib of viewers to z if programme type of quality x is assigned to slot j on day i
@@ -87,9 +88,9 @@ def get_total_contrib_of_viewers(total_possible_combo_count, days, time_slots, g
 def get_contrib_viewer_value(day, slot, programme_index, grade):
     # C(i, k, j, x) = P(i, j, k) * F(x) * POPULATION
 
-    weighting = grade_weightings[grade - 1] #F(x)
+    weighting = grade_weightings[grade] #F(x)
     population = 100
-    percentage_of_viewers = day * slot * (programme_index + 1)
+    percentage_of_viewers = day * slot * (programme_weightings[programme_index])
 
     viewer_contrib_value = percentage_of_viewers * weighting * population
 
